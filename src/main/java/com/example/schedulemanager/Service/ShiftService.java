@@ -40,6 +40,11 @@ public class ShiftService {
         return shiftRepository.findByAssignedUserIdAndDate(userId, date);  // Metod som vi definierade i ShiftRepository
     }
 
+    public List<Shift> getShiftsByOtherUsers(Long userId) {
+        return shiftRepository.findByAssignedUserIdNot(userId);
+    }
+
+
     // Skapa ett nytt skift
     public Shift createShift(Shift shift) {
         // Kontrollera att sluttiden inte är före starttiden

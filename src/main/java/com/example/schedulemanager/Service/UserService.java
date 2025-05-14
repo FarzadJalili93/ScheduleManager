@@ -29,9 +29,13 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
+    // Hämta alla användare utom den som har det angivna ID:t
+    public List<User> getAllUsersExcept(Long id) {
+        return userRepository.findByIdNot(id);
+    }
+
     // Skapa en ny användare
     public User createUser(User user) {
-        // Kolla om e-postadressen redan finns
         Optional<User> existingUser = userRepository.findByEmail(user.getEmail());
         if (existingUser.isPresent()) {
             throw new RuntimeException("Användare med denna e-postadress finns redan");
@@ -41,7 +45,6 @@ public class UserService {
 
     // Uppdatera användare
     public User updateUser(Long id, User updatedUser) {
-        // Kontrollera om användaren finns innan uppdatering
         Optional<User> existingUser = userRepository.findById(id);
         if (existingUser.isPresent()) {
             updatedUser.setId(id); // Sätt ID för att uppdatera det befintliga användarkontot

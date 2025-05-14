@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;  // Injektera PasswordEncoder här
 
     @Autowired
     private RoleRepository roleRepository;
@@ -25,6 +25,7 @@ public class AuthService {
     }
 
     public User registerUser(User user) {
+        // Hämta rollen från databasen
         Role role = roleRepository.findByName(user.getRole().getName())
                 .orElseThrow(() -> new RuntimeException("Role not found"));
 

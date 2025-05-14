@@ -15,4 +15,7 @@ public interface ShiftRepository extends JpaRepository<Shift, Long> {
     List<Shift> findByAssignedUserIdAndDate(Long userId, LocalDate date); // Hämtar skift för en användare på ett specifikt datum
 
     List<Shift> findByAssignedUserIdAndDateBetween(Long userId, LocalDate startDate, LocalDate endDate);
+
+    List<Shift> findByAssignedUserIdNot(Long userId);
+
 }
