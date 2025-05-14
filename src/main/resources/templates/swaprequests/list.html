@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Skiftbyten</title>
+    <link rel="stylesheet" th:href="@{/styles.css}" />
+</head>
+<body>
+<!-- Inkludera header-fragmentet -->
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="container">
+    <div class="card">
+        <h1>Bytesförfråningar</h1>
+
+        <a class="btn" th:href="@{/swap-requests/create}">Ny bytesförfrågan</a>
+
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Begärd av</th>
+                <th>Skift att byta bort</th>
+                <th>Önskat skift</th>
+                <th>Mottagare</th>
+                <th>Status</th>
+                <th>Datum</th>
+                <th sec:authorize="hasRole('ADMIN')">Åtgärder</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="request : ${requests}">
+                <td th:text="${request.id}"></td>
+                <td th:text="${request.requester != null ? request.requester.name : 'Okänd'}"></td>
+                <td th:text="${request.requestedShift != null ? #temporals.format(request.requestedShift.date, 'yyyy-MM-dd HH:mm') : 'Saknas'}"></td>
+                <td th:text="${request.desiredShift != null ? #temporals.format(request.desiredShift.date, 'yyyy-MM-dd HH:mm') : 'Saknas'}"></td>
+                <td th:text="${request.targetUser != null ? request.targetUser.name : 'Okänd'}"></td>
+                <td th:text="${request.status}"></td>
+                <td th:text="${request.requestDate != null ? #temporals.format(request.requestDate, 'yyyy-MM-dd HH:mm') : 'Saknas'}"></td>
+                <td sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{'/swap-requests/approve/' + ${request.id}}" class="btn">Godkänn</a>
+                    <a th:href="@{'/swap-requests/decline/' + ${request.id}}" class="btn">Avvisa</a>
+                    <a th:href="@{'/swap-requests/delete/' + ${request.id}}" class="btn" onclick="return confirm('Är du säker?')">Ta bort</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

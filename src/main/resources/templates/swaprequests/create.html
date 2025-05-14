@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Ny Bytesförfrågan</title>
+    <link rel="stylesheet" th:href="@{/styles.css}" />
+</head>
+<body>
+<!-- Inkludera header-fragmentet -->
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="container">
+    <div class="card">
+        <h1>Ny Bytesförfrågan</h1>
+        <form th:action="@{/swap-requests/create}" method="post" th:object="${swapRequest}">
+            <label for="requestedShift">Skift du vill byta bort:</label>
+            <select id="requestedShift" th:field="*{requestedShift}" required>
+                <option value="">Välj skift</option>
+                <th:block th:each="shift : ${availableShifts}">
+                    <option th:value="${shift.id}"
+                            th:text="${#temporals.format(shift.date, 'yyyy-MM-dd HH:mm') + ' - ' + shift.assignedUser.name}"></option>
+                </th:block>
+            </select>
+
+            <label for="desiredShift">Skift du vill ha:</label>
+            <select id="desiredShift" th:field="*{desiredShift}" required>
+                <option value="">Välj skift</option>
+                <th:block th:each="shift : ${otherShifts}">
+                    <option th:value="${shift.id}"
+                            th:text="${#temporals.format(shift.date, 'yyyy-MM-dd HH:mm') + ' - ' + shift.assignedUser.name}"></option>
+                </th:block>
+            </select>
+
+            <label for="targetUser">Användare att byta med:</label>
+            <select id="targetUser" th:field="*{targetUser}" required>
+                <option value="">Välj användare</option>
+                <th:block th:each="user : ${users}">
+                    <option th:value="${user.id}" th:text="${user.name}"></option>
+                </th:block>
+            </select>
+
+            <button type="submit" class="btn">Skicka</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>
