@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Uppdatera Förfrågan</title>
+    <link rel="stylesheet" th:href="@{/styles.css}" />
+</head>
+<body>
+<!-- Inkluderar headern från fragmentet -->
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="container">
+    <div class="card">
+        <h1>Uppdatera Ledighetsförfrågan</h1>
+
+        <!-- Om användaren är ADMIN visas formuläret -->
+        <div th:if="${currentUser.role.name == 'ADMIN'}">
+            <form th:action="@{/timeoff/edit/{id}(id=${timeOffRequest.id})}" method="post" th:object="${timeOffRequest}">
+
+                <label for="startDate">Startdatum:</label>
+                <input type="date" id="startDate" th:field="*{startDate}" required />
+
+                <label for="endDate">Slutdatum:</label>
+                <input type="date" id="endDate" th:field="*{endDate}" required />
+
+                <label for="reason">Anledning:</label>
+                <textarea id="reason" th:field="*{reason}" rows="3" required></textarea>
+
+                <label for="approvalStatus">Status:</label>
+                <select id="approvalStatus" th:field="*{approvalStatus}">
+                    <option value="PENDING">PENDING</option>
+                    <option value="APPROVED">APPROVED</option>
+                    <option value="REJECTED">REJECTED</option>
+                </select>
+
+                <button type="submit" class="btn">Uppdatera</button>
+            </form>
+        </div>
+
+        <!-- Om användaren inte är ADMIN visas varningsmeddelande -->
+        <div th:if="${currentUser.role.name ne 'ADMIN'}">
+            <p>Du har inte behörighet att redigera denna ansökan.</p>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

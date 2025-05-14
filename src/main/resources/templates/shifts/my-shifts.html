@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Mina Skift</title>
+    <link rel="stylesheet" th:href="@{/styles.css}" />
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.2/main.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.2/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.2/locales-all.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <h1>Mina Skift – <span th:text="${currentUserName}">Användare</span></h1>
+
+    <div class="user-info" th:if="${currentUserName}">
+        Välkommen, <span th:text="${currentUserName}">Användare</span>!
+        <a th:href="@{/auth/logout}">Logga ut</a>
+    </div>
+
+    <div class="action-buttons">
+        <a th:href="@{/timeoff/my}" class="btn">Ledighetsansökan</a>
+        <a th:href="@{/swap-requests}" class="btn">Passbytesförfrågningar</a>
+    </div>
+
+    <div id="calendar"></div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Datum</th>
+            <th>Starttid</th>
+            <th>Sluttid</th>
+            <th>Bekräftad</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="shift : ${shifts}">
+            <td th:text="${shift.date}">2025-01-01</td>
+            <td th:text="${shift.startTime}">08:00</td>
+            <td th:text="${shift.endTime}">17:00</td>
+            <td th:text="${shift.confirmed ? 'Ja' : 'Nej'}">Ja</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        var shifts = /*[[${shifts}]]*/ [];
+
+        // Omvandla skift till FullCalendars eventformat
+        var events = shifts.map(function(shift) {
+            return {
+                title: shift.startTime + ' - ' + shift.endTime,  // Endast start - slut tid, utan duplicerad starttid
+                start: shift.date + 'T' + shift.startTime,       // Starttiden för eventet
+                end: shift.date + 'T' + shift.endTime,           // Sluttiden för eventet
+                extendedProps: {
+                    confirmed: shift.confirmed
+                }
+            };
+        });
+
+        // Initiera kalendern
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth', // Månadsvy vid start
+            events: events, // Sätt eventerna från shifts
+            eventRender: function(info) {
+                // Här säkerställer vi att eventets titel är endast "starttid - sluttid"
+                info.el.querySelector('.fc-event-title').innerText = info.event.title;
+            },
+            eventContent: function(info) {
+                // Detta är den viktigaste delen - tvinga kalendern att bara visa tidsintervallet
+                return {
+                    html: '<div class="fc-event-time">' + info.event.title + '</div>'
+                };
+            },
+            eventClick: function(info) {
+                alert('Passdetaljer:\n' +
+                    'Från: ' + info.event.start.toLocaleString() + '\n' +
+                    'Till: ' + info.event.end.toLocaleString() + '\n' +
+                    'Bekräftat: ' + (info.event.extendedProps.confirmed ? 'Ja' : 'Nej'));
+            }
+        });
+
+        calendar.render(); // Rendera kalendern
+    });
+
+
+
+</script>
+
+</body>
+</html>

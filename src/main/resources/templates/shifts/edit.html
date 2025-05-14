@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Redigera Skift</title>
+    <link rel="stylesheet" th:href="@{/styles.css}" />
+</head>
+<body>
+<!-- Inkludera headern här -->
+<div th:replace="fragments/header :: header"></div>
+
+<div class="container">
+    <h2>Redigera skift</h2>
+    <form th:action="@{/shifts/edit/{id}(id=${shift.id})}" th:object="${shift}" method="post">
+        <label for="date">Datum:</label>
+        <input type="date" id="date" th:field="*{date}" required/>
+
+        <label for="startTime">Starttid:</label>
+        <input type="time" id="startTime" th:field="*{startTime}" required/>
+
+        <label for="endTime">Sluttid:</label>
+        <input type="time" id="endTime" th:field="*{endTime}" required/>
+
+        <!-- Lägg till ett fält för att välja användare -->
+        <label for="userId">Tilldela till användare:</label>
+        <select id="userId" name="userId" required>
+            <option value="" disabled selected>Välj en användare</option>
+            <option th:each="user : ${users}" th:value="${user.id}" th:text="${user.name}"
+                    th:selected="${user.id == shift.assignedUser.id}"></option>
+        </select>
+
+        <button type="submit">Uppdatera</button>
+    </form>
+</div>
+</body>
+</html>
+

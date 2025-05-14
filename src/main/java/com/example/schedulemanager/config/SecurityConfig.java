@@ -3,12 +3,15 @@ package com.example.schedulemanager.config;
 import com.example.schedulemanager.Service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 
 @Configuration
 @EnableWebSecurity
@@ -17,15 +20,9 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService customUserDetailsService;
 
-    // Använd konstruktörsinjektion för att undvika problem med autowiring
     @Autowired
     public SecurityConfig(CustomUserDetailsService customUserDetailsService) {
         this.customUserDetailsService = customUserDetailsService;
-    }
-
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 
     @Bean
@@ -40,15 +37,44 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .anyRequest().authenticated()
+                        // Endast Admin har åtkomst till denna URL
+                        .requestMatchers("/shifts/all").hasRole("ADMIN")
+                        // Endast inloggade användare kan se sina egna skift
+                        .requestMatchers("/shifts/my-shifts").hasAnyRole("ADMIN", "EMPLOYEE")
+                        // Gör vissa sidor tillgängliga för alla användare
+                        .requestMatchers("/", "/auth/login", "/auth/register", "/css/**", "/js/**").permitAll()
+                        .anyRequest().authenticated() // Alla andra sidor kräver autentisering
                 )
-                .httpBasic(httpBasic -> {}); // Aktiverar HTTP Basic Auth
+                .formLogin(form -> form
+                        .loginPage("/auth/login")  // Loginsida
+                        .loginProcessingUrl("/login")  // URL för att bearbeta inloggning
+                        .defaultSuccessUrl("/shifts/my-shifts", true)  // Redirigera användaren till rätt sida beroende på roll
+                        .failureUrl("/auth/login?error=true")  // Fel vid inloggning
+                        .permitAll() // Tillåt alla att komma till inloggningen
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/auth/logout") // Logga ut via denna URL
+                        .logoutSuccessUrl("/") // När användaren loggas ut, gå till hemsidan
+                        .invalidateHttpSession(true)  // Töm sessionen vid utloggning
+                        .deleteCookies("JSESSIONID") // Ta bort sessionens cookie
+                        .permitAll() // Tillåt alla att logga ut
+                );
+
+        // Koppla in vår auth provider
+        http.authenticationProvider(authenticationProvider());
 
         return http.build();
     }
 
+    // Ny korrekt authenticationManager (utan and()!)
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
+    }
 
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }

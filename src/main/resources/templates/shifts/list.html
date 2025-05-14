@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Alla Skift</title>
+    <link rel="stylesheet" th:href="@{/styles.css}" />
+</head>
+<body>
+<div class="container">
+    <h1>Alla Skift</h1>
+
+    <!-- Hälsning och logga ut-länk -->
+    <div class="user-info" th:if="${currentUserName}">
+        Välkommen, <span th:text="${currentUserName}">Användare</span>!
+        <a th:href="@{/auth/logout}">Logga ut</a>
+    </div>
+
+    <!-- Knapp till ledighetsansökningar -->
+    <div class="action-buttons">
+        <a th:href="@{/timeoff/list}" class="btn">Ledighetsansökan</a>
+        <a th:href="@{/swap-requests}" class="btn">Passbytesförfrågningar</a>
+    </div>
+
+    <a class="create-btn" th:href="@{/shifts/create}">Skapa nytt skift</a>
+
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Datum</th>
+            <th>Bekräftad</th>
+            <th>Användare</th>
+            <th>Åtgärder</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="shift : ${shifts}">
+            <td th:text="${shift.id}"></td>
+            <td th:text="${shift.date}"></td>
+            <td th:text="${shift.confirmed ? 'Ja' : 'Nej'}"></td>
+            <td th:text="${shift.assignedUser.name}"></td>
+            <td>
+                <div class="btn-group">
+                    <a class="btn" th:href="@{'/shifts/edit/' + ${shift.id}}">Redigera</a>
+                    <a class="btn" th:href="@{'/shifts/confirm/' + ${shift.id}}">Bekräfta</a>
+                    <a class="btn" th:href="@{'/shifts/delete/' + ${shift.id}}" onclick="return confirm('Är du säker?')">Ta bort</a>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

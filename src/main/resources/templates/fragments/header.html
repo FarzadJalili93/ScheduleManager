@@ -1,0 +1,14 @@
+<div th:fragment="header">
+    <h1>Mina Skift – <span th:text="${currentUserName}">Användare</span></h1>
+
+    <div class="user-info" th:if="${currentUserName}">
+        Välkommen, <span th:text="${currentUserName}">Användare</span>!
+        <a th:href="@{/auth/logout}">Logga ut</a>
+    </div>
+
+    <div class="action-buttons">
+        <a th:href="@{/timeoff/my}" class="btn">Ledighetsansökan</a>
+        <a th:href="@{/swap-requests}" class="btn">Passbytesförfrågningar</a>
+        <a th:href="@{/shifts/my-shifts}" class="btn">Mina Skift</a> <!-- Ändrad URL -->
+    </div>
+</div>

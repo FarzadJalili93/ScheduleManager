@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Logga in</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .login-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            margin-bottom: 1.5rem;
+            color: #243b53;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #334e68;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.7rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: #486581;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #243b53;
+        }
+
+        .register-link {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .register-link a {
+            color: #486581;
+            text-decoration: none;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+<form class="login-form" th:action="@{/login}" method="post">
+    <h2>Logga in</h2>
+
+    <p th:if="${param.error}" class="error-message">Fel e-post eller lösenord</p>
+
+    <label for="username">E-post</label>
+    <input type="text" id="username" name="username" required>
+
+    <label for="password">Lösenord</label>
+    <input type="password" id="password" name="password" required>
+
+    <button type="submit">Logga in</button>
+
+    <div class="register-link">
+        <p>Har du inget konto? <a th:href="@{/auth/register}">Registrera dig här</a></p>
+    </div>
+</form>
+</body>
+</html>

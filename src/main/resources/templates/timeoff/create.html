@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Ny Ledighetsförfrågan</title>
+    <link rel="stylesheet" th:href="@{/styles.css}" />
+</head>
+<body>
+<!-- Inkluderar headern från fragmentet -->
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="container">
+    <div class="card">
+        <h1>Ny Ledighetsförfrågan</h1>
+        <form th:action="@{/timeoff/create}" method="post" th:object="${timeOffRequest}">
+
+            <label for="startDate">Startdatum:</label>
+            <input type="date" id="startDate" th:field="*{startDate}" required />
+
+            <label for="endDate">Slutdatum:</label>
+            <input type="date" id="endDate" th:field="*{endDate}" required />
+
+            <label for="reason">Anledning:</label>
+            <textarea id="reason" th:field="*{reason}" rows="3" required></textarea>
+
+            <button type="submit" class="btn">Skicka</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

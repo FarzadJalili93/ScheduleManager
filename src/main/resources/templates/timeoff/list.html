@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Alla Ledighetsförfrågningar</title>
+    <link rel="stylesheet" th:href="@{/styles.css}" />
+</head>
+<body>
+<!-- Inkluderar headern från fragmentet -->
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="container">
+    <div class="card">
+        <h1>Alla Ledighetsförfrågningar</h1>
+        <table>
+            <thead>
+            <tr>
+                <th>Användare</th>
+                <th>Startdatum</th>
+                <th>Slutdatum</th>
+                <th>Status</th>
+                <th>Åtgärder</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="request : ${requests}">
+                <td th:text="${request.user.name}">Användare</td>
+                <td th:text="${request.startDate}">2025-01-01</td>
+                <td th:text="${request.endDate}">2025-01-03</td>
+                <td th:text="${request.approvalStatus}">PENDING</td>
+                <td>
+                    <a th:href="@{/timeoff/edit/{id}(id=${request.id})}" class="btn btn-primary">Redigera</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

@@ -1,91 +1,138 @@
 package com.example.schedulemanager.Controller;
 
 import com.example.schedulemanager.Entities.TimeOffRequest;
-import com.example.schedulemanager.Service.TimeOffRequestService;
+import com.example.schedulemanager.Entities.User;
 import com.example.schedulemanager.Enum.ApprovalStatus;
+import com.example.schedulemanager.Service.TimeOffRequestService;
+import com.example.schedulemanager.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
-@RestController
-@RequestMapping("/api/timeoffrequests")
+@Controller
+@RequestMapping("/timeoff")
 public class TimeOffRequestController {
 
     private final TimeOffRequestService timeOffRequestService;
+    private final UserService userService;
 
     @Autowired
-    public TimeOffRequestController(TimeOffRequestService timeOffRequestService) {
+    public TimeOffRequestController(TimeOffRequestService timeOffRequestService, UserService userService) {
         this.timeOffRequestService = timeOffRequestService;
+        this.userService = userService;
     }
 
-    // Skapa en ny TimeOffRequest
-    @PostMapping
-    public ResponseEntity<TimeOffRequest> createRequest(@RequestBody TimeOffRequest request) {
-        try {
-            TimeOffRequest createdRequest = timeOffRequestService.createRequest(request);
-            return new ResponseEntity<>(createdRequest, HttpStatus.CREATED);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    // Hämta aktuell inloggad användare
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() &&
+                !authentication.getPrincipal().equals("anonymousUser")) {
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String email = userDetails.getUsername();
+            return userService.getUserByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Användare hittades inte"));
         }
+        return null;
     }
 
-    // Hämta alla TimeOffRequests
-    @GetMapping
-    public ResponseEntity<List<TimeOffRequest>> getAllRequests() {
-        List<TimeOffRequest> requests = timeOffRequestService.getAllRequests();
-        return new ResponseEntity<>(requests, HttpStatus.OK);
+    // Lista alla ledighetsansökningar (för admin)
+    @GetMapping("/list")
+    public String listRequests(Model model) {
+        User currentUser = getCurrentUser();
+        if (currentUser != null && "ADMIN".equals(currentUser.getRole().getName())) {
+            List<TimeOffRequest> requests = timeOffRequestService.getAllRequests();
+            model.addAttribute("requests", requests);
+            return "timeoff/list";
+        }
+        return "redirect:/timeoff/my"; // om inte admin
     }
 
-    // Hämta en TimeOffRequest via ID
-    @GetMapping("/{id}")
-    public ResponseEntity<TimeOffRequest> getRequestById(@PathVariable Long id) {
-        Optional<TimeOffRequest> request = timeOffRequestService.getRequestById(id);
-        return request.map(r -> new ResponseEntity<>(r, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    // Visa formulär för att skapa en ny ledighetsansökan
+    @GetMapping("/create")
+    public String showCreateForm(Model model) {
+        model.addAttribute("timeOffRequest", new TimeOffRequest());
+        return "timeoff/create";
     }
 
-    // Hämta TimeOffRequests för en viss användare
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<TimeOffRequest>> getRequestsByUserId(@PathVariable Long userId) {
-        List<TimeOffRequest> requests = timeOffRequestService.getRequestsByUserId(userId);
-        return new ResponseEntity<>(requests, HttpStatus.OK);
+    // Spara en ny ledighetsansökan
+    @PostMapping("/create")
+    public String createRequest(@ModelAttribute("timeOffRequest") TimeOffRequest request) {
+        User currentUser = getCurrentUser();
+        if (currentUser != null) {
+            request.setUser(currentUser);
+            request.setApprovalStatus(ApprovalStatus.PENDING);
+            timeOffRequestService.createRequest(request);
+        }
+        return "redirect:/timeoff/my";
     }
 
-    // Uppdatera en TimeOffRequest
-    @PutMapping("/{id}")
-    public ResponseEntity<TimeOffRequest> updateRequest(@PathVariable Long id, @RequestBody TimeOffRequest updatedRequest) {
-        TimeOffRequest request = timeOffRequestService.updateRequest(id, updatedRequest);
-        return request != null ? new ResponseEntity<>(request, HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    // Visa mina ansökningar
+    @GetMapping("/my")
+    public String viewMyRequests(Model model) {
+        User currentUser = getCurrentUser();
+        if (currentUser != null) {
+            List<TimeOffRequest> myRequests = timeOffRequestService.getRequestsByUserId(currentUser.getId());
+            model.addAttribute("requests", myRequests);
+        }
+        return "timeoff/my";
     }
 
-    // Ta bort en TimeOffRequest
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRequest(@PathVariable Long id) {
-        boolean deleted = timeOffRequestService.deleteRequest(id);
-        return deleted ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
-                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-
-    // Uppdatera godkännande-status för en TimeOffRequest (approve/deny)
-    @PutMapping("/{id}/status")
-    public ResponseEntity<TimeOffRequest> updateApprovalStatus(@PathVariable Long id, @RequestParam ApprovalStatus status) {
-        try {
-            TimeOffRequest updatedRequest;
-            if (status == ApprovalStatus.APPROVED) {
-                updatedRequest = timeOffRequestService.approveRequest(id); // Använd service-metod för godkännande
-            } else if (status == ApprovalStatus.REJECTED) {
-                updatedRequest = timeOffRequestService.rejectRequest(id); // Använd service-metod för avslående
-            } else {
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST); // Ogiltig status
+    // Visa formulär för att uppdatera en ansökan
+    @GetMapping("/edit/{id}")
+    public String showEditForm(@PathVariable Long id, Model model) {
+        User currentUser = getCurrentUser();
+        if (currentUser != null && "ADMIN".equals(currentUser.getRole().getName())) {
+            TimeOffRequest request = timeOffRequestService.getRequestById(id).orElse(null);
+            if (request != null) {
+                model.addAttribute("timeOffRequest", request);
+                model.addAttribute("currentUser", currentUser);
+                return "timeoff/edit";
             }
-            return new ResponseEntity<>(updatedRequest, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND); // Om något gick fel, returnera NOT_FOUND
         }
+        return "redirect:/timeoff/my";
+    }
+
+    @PostMapping("/edit/{id}")
+    public String updateRequest(@PathVariable Long id, @ModelAttribute("timeOffRequest") TimeOffRequest updatedRequest) {
+        User currentUser = getCurrentUser();
+        if (currentUser != null && "ADMIN".equalsIgnoreCase(currentUser.getRole().getName())) {
+            TimeOffRequest existingRequest = timeOffRequestService.getRequestById(id).orElse(null);
+            if (existingRequest != null) {
+                updatedRequest.setId(id);
+                updatedRequest.setUser(existingRequest.getUser());
+                timeOffRequestService.updateRequest(id, updatedRequest);
+            }
+            return "redirect:/timeoff/list";
+        }
+        return "redirect:/timeoff/my";
+    }
+
+    // Ta bort ansökan
+    @GetMapping("/delete/{id}")
+    public String deleteRequest(@PathVariable Long id) {
+        User currentUser = getCurrentUser();
+        TimeOffRequest request = timeOffRequestService.getRequestById(id).orElse(null);
+        if (request != null && currentUser != null &&
+                request.getUser().getId().equals(currentUser.getId())) {
+            timeOffRequestService.deleteRequest(id);
+        }
+        return "redirect:/timeoff/my";
+    }
+
+    // ADMIN: ändra status
+    @PostMapping("/{id}/status")
+    public String updateApprovalStatus(@PathVariable Long id, @RequestParam("status") ApprovalStatus status) {
+        if (status == ApprovalStatus.APPROVED) {
+            timeOffRequestService.approveRequest(id);
+        } else if (status == ApprovalStatus.REJECTED) {
+            timeOffRequestService.rejectRequest(id);
+        }
+        return "redirect:/timeoff/list";
     }
 }
