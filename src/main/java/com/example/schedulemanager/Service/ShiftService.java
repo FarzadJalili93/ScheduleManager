@@ -15,29 +15,24 @@ public class ShiftService {
     @Autowired
     private ShiftRepository shiftRepository;
 
-    // Hämta alla skift
     public List<Shift> getAllShifts() {
         return shiftRepository.findAll();
     }
 
-    // Hämta skift baserat på ID
     public Optional<Shift> getShiftById(Long id) {
         return shiftRepository.findById(id);
     }
 
-    // Hämta skift för en specifik användare
     public List<Shift> getShiftsByUserId(Long userId) {
-        return shiftRepository.findByAssignedUserId(userId);  // Metod som vi definierade i ShiftRepository
+        return shiftRepository.findByAssignedUserId(userId);
     }
 
-    // Hämta skift baserat på datum
     public List<Shift> getShiftsByDate(LocalDate date) {
-        return shiftRepository.findByDate(date);  // Metod som vi definierade i ShiftRepository
+        return shiftRepository.findByDate(date);
     }
 
-    // Hämta skift för en specifik användare på ett specifikt datum
     public List<Shift> getShiftsByUserIdAndDate(Long userId, LocalDate date) {
-        return shiftRepository.findByAssignedUserIdAndDate(userId, date);  // Metod som vi definierade i ShiftRepository
+        return shiftRepository.findByAssignedUserIdAndDate(userId, date);
     }
 
     public List<Shift> getShiftsByOtherUsers(Long userId) {
@@ -45,26 +40,20 @@ public class ShiftService {
     }
 
 
-    // Skapa ett nytt skift
     public Shift createShift(Shift shift) {
-        // Kontrollera att sluttiden inte är före starttiden
         if (shift.getEndTime().isBefore(shift.getStartTime())) {
             throw new RuntimeException("Sluttiden kan inte vara före starttiden.");
         }
 
-        // Validera att användaren inte redan har ett skift på det här datumet
         List<Shift> existingShifts = shiftRepository.findByAssignedUserIdAndDate(shift.getAssignedUser().getId(), shift.getDate());
         if (!existingShifts.isEmpty()) {
             throw new RuntimeException("Användaren har redan ett skift på det här datumet.");
         }
 
-        // Spara det nya skiftet
         return shiftRepository.save(shift);
     }
 
-    // Uppdatera ett skift
     public Shift updateShift(Long id, Shift shift) {
-        // Hämta det befintliga skiftet
         Optional<Shift> existingShiftOpt = shiftRepository.findById(id);
         if (existingShiftOpt.isEmpty()) {
             throw new RuntimeException("Skift med ID " + id + " finns inte.");
@@ -72,12 +61,10 @@ public class ShiftService {
 
         Shift existingShift = existingShiftOpt.get();
 
-        // Validera att sluttiden inte är före starttiden
         if (shift.getEndTime().isBefore(shift.getStartTime())) {
             throw new RuntimeException("Sluttiden kan inte vara före starttiden.");
         }
 
-        // Om användaren är ändrad, kontrollera om användaren redan har ett skift på det här datumet
         if (shift.getAssignedUser() != null && !shift.getAssignedUser().equals(existingShift.getAssignedUser())) {
             List<Shift> existingShifts = shiftRepository.findByAssignedUserIdAndDate(shift.getAssignedUser().getId(), shift.getDate());
             if (!existingShifts.isEmpty()) {
@@ -85,17 +72,14 @@ public class ShiftService {
             }
         }
 
-        // Uppdatera skiftet med nya värden
         existingShift.setStartTime(shift.getStartTime());
         existingShift.setEndTime(shift.getEndTime());
         existingShift.setConfirmed(shift.isConfirmed());
-        existingShift.setAssignedUser(shift.getAssignedUser()); // Om användaren är uppdaterad
+        existingShift.setAssignedUser(shift.getAssignedUser());
 
-        // Spara det uppdaterade skiftet
         return shiftRepository.save(existingShift);
     }
 
-    // Bekräfta ett skift
     public Shift confirmShift(Long id) {
         Optional<Shift> shift = shiftRepository.findById(id);
         if (shift.isPresent()) {
@@ -107,7 +91,6 @@ public class ShiftService {
         }
     }
 
-    // Radera ett skift
     public void deleteShift(Long id) {
         Optional<Shift> shift = shiftRepository.findById(id);
         if (shift.isPresent()) {

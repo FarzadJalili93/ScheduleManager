@@ -28,7 +28,6 @@ public class TimeOffRequestController {
         this.userService = userService;
     }
 
-    // Hämta aktuell inloggad användare
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated() &&
@@ -41,7 +40,6 @@ public class TimeOffRequestController {
         return null;
     }
 
-    // Lista alla ledighetsansökningar (för admin)
     @GetMapping("/list")
     public String listRequests(Model model) {
         User currentUser = getCurrentUser();
@@ -50,17 +48,15 @@ public class TimeOffRequestController {
             model.addAttribute("requests", requests);
             return "timeoff/list";
         }
-        return "redirect:/timeoff/my"; // om inte admin
+        return "redirect:/timeoff/my";
     }
 
-    // Visa formulär för att skapa en ny ledighetsansökan
     @GetMapping("/create")
     public String showCreateForm(Model model) {
         model.addAttribute("timeOffRequest", new TimeOffRequest());
         return "timeoff/create";
     }
 
-    // Spara en ny ledighetsansökan
     @PostMapping("/create")
     public String createRequest(@ModelAttribute("timeOffRequest") TimeOffRequest request) {
         User currentUser = getCurrentUser();
@@ -72,7 +68,6 @@ public class TimeOffRequestController {
         return "redirect:/timeoff/my";
     }
 
-    // Visa mina ansökningar
     @GetMapping("/my")
     public String viewMyRequests(Model model) {
         User currentUser = getCurrentUser();
@@ -83,7 +78,6 @@ public class TimeOffRequestController {
         return "timeoff/my";
     }
 
-    // Visa formulär för att uppdatera en ansökan
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
         User currentUser = getCurrentUser();
@@ -113,7 +107,6 @@ public class TimeOffRequestController {
         return "redirect:/timeoff/my";
     }
 
-    // Ta bort ansökan
     @GetMapping("/delete/{id}")
     public String deleteRequest(@PathVariable Long id) {
         User currentUser = getCurrentUser();
@@ -125,7 +118,6 @@ public class TimeOffRequestController {
         return "redirect:/timeoff/my";
     }
 
-    // ADMIN: ändra status
     @PostMapping("/{id}/status")
     public String updateApprovalStatus(@PathVariable Long id, @RequestParam("status") ApprovalStatus status) {
         if (status == ApprovalStatus.APPROVED) {

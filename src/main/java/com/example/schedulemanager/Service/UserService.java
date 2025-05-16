@@ -14,27 +14,27 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    // Hämta alla användare
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
-    // Hämta användare baserat på ID
     public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
     }
 
-    // Hämta användare baserat på e-post
     public Optional<User> getUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
-    // Hämta alla användare utom den som har det angivna ID:t
     public List<User> getAllUsersExcept(Long id) {
         return userRepository.findByIdNot(id);
     }
 
-    // Skapa en ny användare
+
     public User createUser(User user) {
         Optional<User> existingUser = userRepository.findByEmail(user.getEmail());
         if (existingUser.isPresent()) {
@@ -43,18 +43,16 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    // Uppdatera användare
     public User updateUser(Long id, User updatedUser) {
         Optional<User> existingUser = userRepository.findById(id);
         if (existingUser.isPresent()) {
-            updatedUser.setId(id); // Sätt ID för att uppdatera det befintliga användarkontot
+            updatedUser.setId(id);
             return userRepository.save(updatedUser);
         } else {
             throw new RuntimeException("Användare med ID " + id + " finns inte");
         }
     }
 
-    // Ta bort användare
     public void deleteUser(Long id) {
         Optional<User> existingUser = userRepository.findById(id);
         if (existingUser.isPresent()) {
@@ -64,12 +62,11 @@ public class UserService {
         }
     }
 
-    // Uppdatera användarens lösenord
     public User updateUserPassword(Long id, String newPassword) {
         Optional<User> existingUser = userRepository.findById(id);
         if (existingUser.isPresent()) {
             User user = existingUser.get();
-            user.setPassword(newPassword); // Här kan du lägga till lösenordshantering (t.ex. hashning)
+            user.setPassword(newPassword);
             return userRepository.save(user);
         } else {
             throw new RuntimeException("Användare med ID " + id + " finns inte");

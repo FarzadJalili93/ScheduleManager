@@ -9,13 +9,12 @@
 <div class="container">
     <h1>Alla Skift</h1>
 
-    <!-- Hälsning och logga ut-länk -->
+
     <div class="user-info" th:if="${currentUserName}">
         Välkommen, <span th:text="${currentUserName}">Användare</span>!
         <a th:href="@{/auth/logout}">Logga ut</a>
     </div>
 
-    <!-- Knapp till ledighetsansökningar -->
     <div class="action-buttons">
         <a th:href="@{/timeoff/list}" class="btn">Ledighetsansökan</a>
         <a th:href="@{/swap-requests}" class="btn">Passbytesförfrågningar</a>

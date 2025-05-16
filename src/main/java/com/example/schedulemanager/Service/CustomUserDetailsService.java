@@ -7,7 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
-import com.example.schedulemanager.config.CustomUserDetails; // Se till att du har skapat denna klassen
+import com.example.schedulemanager.config.CustomUserDetails;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getEmail())
                 .password(user.getPassword())
-                .roles(user.getRole().getName()) // Här sätts rollen till UserDetails
+                .roles(user.getRole().getName())
                 .build();
     }
 

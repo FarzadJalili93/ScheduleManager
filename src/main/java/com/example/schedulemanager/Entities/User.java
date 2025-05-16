@@ -17,7 +17,6 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
-    // Ersätter den gamla rollen som en String till en relation med Role
     @ManyToOne
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;

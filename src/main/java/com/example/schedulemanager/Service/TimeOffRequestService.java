@@ -23,7 +23,6 @@ public class TimeOffRequestService {
         this.shiftRepository = shiftRepository;
     }
 
-    // Skapa en ny TimeOffRequest
     public TimeOffRequest createRequest(TimeOffRequest request) {
         if (request.getEndDate().isBefore(request.getStartDate())) {
             throw new IllegalArgumentException("Slutdatum kan inte vara före startdatum.");
@@ -43,22 +42,18 @@ public class TimeOffRequestService {
         return timeOffRequestRepository.save(request);
     }
 
-    // Hämta alla TimeOffRequest
     public List<TimeOffRequest> getAllRequests() {
         return timeOffRequestRepository.findAll();
     }
 
-    // Hämta en TimeOffRequest via ID
     public Optional<TimeOffRequest> getRequestById(Long id) {
         return timeOffRequestRepository.findById(id);
     }
 
-    // Hämta TimeOffRequests för en viss användare
     public List<TimeOffRequest> getRequestsByUserId(Long userId) {
         return timeOffRequestRepository.findByUserId(userId);
     }
 
-    // Uppdatera en TimeOffRequest
     public TimeOffRequest updateRequest(Long id, TimeOffRequest updatedRequest) {
         if (updatedRequest.getEndDate().isBefore(updatedRequest.getStartDate())) {
             throw new IllegalArgumentException("Slutdatum kan inte vara före startdatum.");
@@ -75,7 +70,6 @@ public class TimeOffRequestService {
         return timeOffRequestRepository.save(updatedRequest);
     }
 
-    // Ta bort en TimeOffRequest
     public boolean deleteRequest(Long id) {
         if (timeOffRequestRepository.existsById(id)) {
             timeOffRequestRepository.deleteById(id);
@@ -84,7 +78,6 @@ public class TimeOffRequestService {
         return false;
     }
 
-    // Godkänn en TimeOffRequest
     public TimeOffRequest approveRequest(Long id) {
         Optional<TimeOffRequest> requestOptional = timeOffRequestRepository.findById(id);
         if (requestOptional.isPresent()) {
@@ -98,7 +91,6 @@ public class TimeOffRequestService {
         throw new RuntimeException("Tid off begäran inte funnen.");
     }
 
-    // Avslå en TimeOffRequest
     public TimeOffRequest rejectRequest(Long id) {
         Optional<TimeOffRequest> requestOptional = timeOffRequestRepository.findById(id);
         if (requestOptional.isPresent()) {

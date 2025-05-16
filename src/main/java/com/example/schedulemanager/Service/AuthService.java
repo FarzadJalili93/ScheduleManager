@@ -12,26 +12,23 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;  // Injektera PasswordEncoder här
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
     private RoleRepository roleRepository;
 
-    // Konstruktor för att injicera beroenden
     @Autowired
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, RoleRepository roleRepository) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     public User registerUser(User user) {
-        // Hämta rollen från databasen
         Role role = roleRepository.findByName(user.getRole().getName())
                 .orElseThrow(() -> new RuntimeException("Role not found"));
 
         user.setRole(role);
-
-        // Hashar lösenordet innan det sparas
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         return userRepository.save(user);
@@ -41,7 +38,7 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Jämför det hashade lösenordet med det inskickade lösenordet
+
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid credentials");
         }
