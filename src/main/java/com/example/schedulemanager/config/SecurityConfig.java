@@ -38,36 +38,31 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Endast Admin har åtkomst till denna URL
                         .requestMatchers("/shifts/all").hasRole("ADMIN")
-                        // Endast inloggade användare kan se sina egna skift
                         .requestMatchers("/shifts/my-shifts").hasAnyRole("ADMIN", "EMPLOYEE")
-                        // Gör vissa sidor tillgängliga för alla användare
                         .requestMatchers("/", "/auth/login", "/auth/register", "/css/**", "/js/**").permitAll()
-                        .anyRequest().authenticated() // Alla andra sidor kräver autentisering
+                        .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
-                        .loginPage("/auth/login")  // Loginsida
-                        .loginProcessingUrl("/login")  // URL för att bearbeta inloggning
-                        .defaultSuccessUrl("/shifts/my-shifts", true)  // Redirigera användaren till rätt sida beroende på roll
-                        .failureUrl("/auth/login?error=true")  // Fel vid inloggning
-                        .permitAll() // Tillåt alla att komma till inloggningen
+                        .loginPage("/auth/login")
+                        .loginProcessingUrl("/login")
+                        .defaultSuccessUrl("/shifts/my-shifts", true)
+                        .failureUrl("/auth/login?error=true")
+                        .permitAll()
                 )
                 .logout(logout -> logout
-                        .logoutUrl("/auth/logout") // Logga ut via denna URL
-                        .logoutSuccessUrl("/") // När användaren loggas ut, gå till hemsidan
-                        .invalidateHttpSession(true)  // Töm sessionen vid utloggning
-                        .deleteCookies("JSESSIONID") // Ta bort sessionens cookie
-                        .permitAll() // Tillåt alla att logga ut
+                        .logoutUrl("/auth/logout")
+                        .logoutSuccessUrl("/")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll()
                 );
 
-        // Koppla in vår auth provider
         http.authenticationProvider(authenticationProvider());
 
         return http.build();
     }
 
-    // Ny korrekt authenticationManager (utan and()!)
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();

@@ -10,7 +10,7 @@ public class Role {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String name; // t.ex. "ADMIN", "EMPLOYEE"
+    private String name;
 
     private String description;
 

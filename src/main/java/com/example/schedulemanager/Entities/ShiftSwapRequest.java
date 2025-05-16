@@ -15,23 +15,23 @@ public class ShiftSwapRequest {
 
     @ManyToOne
     @JoinColumn(name = "requester_id")
-    private User requester; // Den som vill byta bort sitt skift
+    private User requester;
 
     @ManyToOne
     @JoinColumn(name = "requested_shift_id")
-    private Shift requestedShift; // Skiftet som användaren vill byta bort
+    private Shift requestedShift;
 
     @ManyToOne
     @JoinColumn(name = "desired_shift_id")
-    private Shift desiredShift; // Skiftet som användaren vill få
+    private Shift desiredShift;
 
     @ManyToOne
     @JoinColumn(name = "target_user_id")
-    private User targetUser; // Den användare som man vill byta skift med
+    private User targetUser;
 
     private LocalDateTime requestDate;
 
-    private String status; // t.ex. "PENDING", "APPROVED", "DECLINED"
+    private String status;
 
     public ShiftSwapRequest() {}
 

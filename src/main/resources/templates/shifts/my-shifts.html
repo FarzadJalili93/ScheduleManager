@@ -51,22 +51,20 @@
         // Omvandla skift till FullCalendars eventformat
         var events = shifts.map(function(shift) {
             return {
-                title: shift.startTime + ' - ' + shift.endTime,  // Endast start - slut tid, utan duplicerad starttid
-                start: shift.date + 'T' + shift.startTime,       // Starttiden för eventet
-                end: shift.date + 'T' + shift.endTime,           // Sluttiden för eventet
+                title: shift.startTime + ' - ' + shift.endTime,
+                start: shift.date + 'T' + shift.startTime,
+                end: shift.date + 'T' + shift.endTime,
                 extendedProps: {
                     confirmed: shift.confirmed
                 }
             };
         });
 
-        // Initiera kalendern
         var calendarEl = document.getElementById('calendar');
         var calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth', // Månadsvy vid start
+            initialView: 'dayGridMonth',
             events: events, // Sätt eventerna från shifts
             eventRender: function(info) {
-                // Här säkerställer vi att eventets titel är endast "starttid - sluttid"
                 info.el.querySelector('.fc-event-title').innerText = info.event.title;
             },
             eventContent: function(info) {
@@ -83,7 +81,7 @@
             }
         });
 
-        calendar.render(); // Rendera kalendern
+        calendar.render();
     });
 
 

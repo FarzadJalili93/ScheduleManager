@@ -15,8 +15,8 @@ public class TimeOffRequest {
     private LocalDate endDate;
     private String reason;
 
-    @Enumerated(EnumType.STRING) // Lagrar enumvärdet som en sträng i databasen
-    private ApprovalStatus approvalStatus; // Enum som anger statusen på begäran
+    @Enumerated(EnumType.STRING)
+    private ApprovalStatus approvalStatus;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

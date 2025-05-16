@@ -25,13 +25,10 @@ public class ShiftController {
     @Autowired
     private UserService userService;
 
-    // Visa alla skift
     @GetMapping("/all")
     public String viewAllShifts(Model model) {
         List<Shift> shifts = shiftService.getAllShifts();
         model.addAttribute("shifts", shifts);
-
-        // Hämta användaren via Authentication för den inloggade användaren
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated() &&
                 !authentication.getPrincipal().equals("anonymousUser")) {
@@ -45,15 +42,13 @@ public class ShiftController {
         return "shifts/list";
     }
 
-    // Visa formulär för att skapa ett nytt skift
     @GetMapping("/create")
     public String showCreateForm(Model model) {
         model.addAttribute("shift", new Shift());
-        model.addAttribute("users", userService.getAllUsers()); // För att kunna välja user
+        model.addAttribute("users", userService.getAllUsers());
         return "shifts/create";
     }
 
-    // Hantera formulärdata för att skapa skift (med separat userId)
     @PostMapping("/create")
     public String createShift(
             @ModelAttribute("shift") Shift shift,
@@ -66,17 +61,15 @@ public class ShiftController {
         return "redirect:/shifts/all";
     }
 
-    // Visa formulär för att redigera ett skift
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
         Shift shift = shiftService.getShiftById(id)
                 .orElseThrow(() -> new RuntimeException("Skiftet finns inte"));
         model.addAttribute("shift", shift);
-        model.addAttribute("users", userService.getAllUsers()); // Visa valbara användare
+        model.addAttribute("users", userService.getAllUsers());
         return "shifts/edit";
     }
 
-    // Hantera uppdatering av skift (med separat userId)
     @PostMapping("/edit/{id}")
     public String updateShift(
             @PathVariable Long id,
@@ -91,21 +84,18 @@ public class ShiftController {
         return "redirect:/shifts/all";
     }
 
-    // Bekräfta skift
     @GetMapping("/confirm/{id}")
     public String confirmShift(@PathVariable Long id) {
         shiftService.confirmShift(id);
         return "redirect:/shifts/all";
     }
 
-    // Ta bort skift
     @GetMapping("/delete/{id}")
     public String deleteShift(@PathVariable Long id) {
         shiftService.deleteShift(id);
         return "redirect:/shifts/all";
     }
 
-    // Visa skift per användare
     @GetMapping("/user/{userId}")
     public String viewShiftsByUser(@PathVariable Long userId, Model model) {
         List<Shift> userShifts = shiftService.getShiftsByUserId(userId);
@@ -113,7 +103,6 @@ public class ShiftController {
         return "shifts/list";
     }
 
-    // Visa skift för användare på specifikt datum
     @GetMapping("/user/{userId}/date")
     public String viewShiftsByUserAndDate(
             @PathVariable Long userId,
@@ -130,33 +119,26 @@ public class ShiftController {
     public String viewMyShifts(Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // Om användaren inte är inloggad eller är en anonym användare
         if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
-            return "redirect:/auth/login"; // Omdirigera till inloggning om inte inloggad
+            return "redirect:/auth/login";
         }
 
-        // Hämta användaren från Spring Security (det är vanligt att användarnamnet är e-postadressen)
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String email = userDetails.getUsername();
 
-        // Hämta användaren från databasen med hjälp av e-posten
         User currentUser = userService.getUserByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Användare hittades inte"));
 
-        // Kontrollera om användaren har rollen "ADMIN" genom att kolla på deras "role" objekt
         boolean isAdmin = currentUser.getRole() != null && "ADMIN".equals(currentUser.getRole().getName());
 
         if (isAdmin) {
-            // Om användaren är admin, omdirigera till sidan för alla skift
-            return "redirect:/shifts/all"; // Admins ser alla skift
+            return "redirect:/shifts/all";
         }
 
-        // För en vanlig användare (employee), hämta och visa deras egna skift
         List<Shift> myShifts = shiftService.getShiftsByUserId(currentUser.getId());
         model.addAttribute("shifts", myShifts);
         model.addAttribute("currentUserName", currentUser.getName());
 
-        // Visa mina skift-sidan för "employee"
         return "shifts/my-shifts";
     }
 

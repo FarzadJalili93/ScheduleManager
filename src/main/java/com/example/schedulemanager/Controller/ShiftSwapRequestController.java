@@ -32,7 +32,6 @@ public class ShiftSwapRequestController {
         this.shiftService = shiftService;
     }
 
-    // Visa alla bytesförfrågningar
     @GetMapping
     public String listRequests(Model model) {
         List<ShiftSwapRequest> requests = shiftSwapRequestService.getAllRequests();
@@ -40,7 +39,6 @@ public class ShiftSwapRequestController {
         return "swaprequests/list";
     }
 
-    // Visa formulär för att skapa ny bytesförfrågan
     @GetMapping("/create")
     public String showCreateForm(Model model) {
         User loggedInUser = getLoggedInUser();
@@ -64,7 +62,6 @@ public class ShiftSwapRequestController {
         return "swaprequests/create";
     }
 
-    // Skicka ny bytesförfrågan
     @PostMapping("/create")
     public String createRequest(@ModelAttribute("swapRequest") ShiftSwapRequest request) {
         User loggedInUser = getLoggedInUser();
@@ -84,28 +81,24 @@ public class ShiftSwapRequestController {
         return "redirect:/swap-requests";
     }
 
-    // Godkänn förfrågan
     @GetMapping("/approve/{id}")
     public String approveRequest(@PathVariable Long id) {
         shiftSwapRequestService.approveRequest(id);
         return "redirect:/swap-requests";
     }
 
-    // Avvisa förfrågan
     @GetMapping("/decline/{id}")
     public String declineRequest(@PathVariable Long id) {
         shiftSwapRequestService.declineRequest(id);
         return "redirect:/swap-requests";
     }
 
-    // Ta bort förfrågan
     @GetMapping("/delete/{id}")
     public String deleteRequest(@PathVariable Long id) {
         shiftSwapRequestService.deleteRequest(id);
         return "redirect:/swap-requests";
     }
 
-    // 🔒 Hjälpmetod för att hämta inloggad användare via Spring Security
     private User getLoggedInUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()

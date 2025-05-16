@@ -8,9 +8,7 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    // Hämta användare baserat på e-post
     Optional<User> findByEmail(String email);
 
-    // Hämta alla användare som inte har det angivna ID:t
     List<User> findByIdNot(Long id);
 }

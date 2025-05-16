@@ -21,7 +21,6 @@ public class ShiftSwapRequestService {
         this.shiftRepository = shiftRepository;
     }
 
-    // Skapa en ny förfrågan
     public ShiftSwapRequest createSwapRequest(ShiftSwapRequest request) {
         if (request.getTargetUser() == null) {
             throw new IllegalArgumentException("Target user cannot be null");
@@ -29,45 +28,14 @@ public class ShiftSwapRequestService {
         return shiftSwapRequestRepository.save(request);
     }
 
-    // Hämta alla förfrågningar
     public List<ShiftSwapRequest> getAllRequests() {
         return shiftSwapRequestRepository.findAll();
     }
 
-    // Hämta förfrågan med ID
-    public Optional<ShiftSwapRequest> getRequestById(Long id) {
-        return shiftSwapRequestRepository.findById(id);
-    }
-
-    // Hämta förfrågningar av en viss användare (requester)
-    public List<ShiftSwapRequest> getRequestsByRequester(User requester) {
-        return shiftSwapRequestRepository.findByRequester(requester);
-    }
-
-    // Hämta förfrågningar riktade till en viss användare
-    public List<ShiftSwapRequest> getRequestsByTargetUser(User targetUser) {
-        return shiftSwapRequestRepository.findByTargetUser(targetUser);
-    }
-
-    // Uppdatera en förfrågan
-    public ShiftSwapRequest updateRequest(ShiftSwapRequest request) {
-        return shiftSwapRequestRepository.save(request);
-    }
-
-    // Ta bort en förfrågan
     public void deleteRequest(Long id) {
         shiftSwapRequestRepository.deleteById(id);
     }
 
-    // Kontrollera om ett skift redan är involverat i en aktiv bytesförfrågan
-    public boolean isShiftInActiveSwap(Shift shift) {
-        List<ShiftSwapRequest> allRequests = shiftSwapRequestRepository.findAll();
-        return allRequests.stream()
-                .anyMatch(req -> ("PENDING".equals(req.getStatus()) || "APPROVED".equals(req.getStatus())) &&
-                        (req.getRequestedShift().equals(shift) || req.getDesiredShift().equals(shift)));
-    }
-
-    // Godkänn en bytesförfrågan och byt användare mellan skiften
     public ShiftSwapRequest approveRequest(Long requestId) {
         ShiftSwapRequest request = shiftSwapRequestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Förfrågan hittades inte"));
@@ -78,20 +46,16 @@ public class ShiftSwapRequestService {
         User requester = request.getRequester();
         User targetUser = request.getTargetUser();
 
-        // Byt användare
         requestedShift.setAssignedUser(targetUser);
         desiredShift.setAssignedUser(requester);
 
-        // Spara skiften
         shiftRepository.save(requestedShift);
         shiftRepository.save(desiredShift);
 
-        // Uppdatera status på förfrågan
         request.setStatus("APPROVED");
         return shiftSwapRequestRepository.save(request);
     }
 
-    // Avvisa en förfrågan
     public ShiftSwapRequest declineRequest(Long requestId) {
         ShiftSwapRequest request = shiftSwapRequestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Förfrågan hittades inte"));
