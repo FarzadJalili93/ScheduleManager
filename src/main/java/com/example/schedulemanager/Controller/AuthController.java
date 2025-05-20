@@ -3,8 +3,10 @@ package com.example.schedulemanager.Controller;
 import com.example.schedulemanager.Entities.User;
 import com.example.schedulemanager.Repositories.RoleRepository;
 import com.example.schedulemanager.Service.AuthService;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -28,8 +30,15 @@ public class AuthController {
 
     @PostMapping("/register")
     public String registerUser(@ModelAttribute("user") User user, Model model) {
-        authService.registerUser(user);
-        return "redirect:/auth/login";
+        try {
+            authService.registerUser(user);
+            return "redirect:/auth/login";
+        } catch (Exception e) {
+            model.addAttribute("user", user);
+            model.addAttribute("roles", roleRepository.findAll());
+            model.addAttribute("error", "Registreringen misslyckades: Konto med Användarnamn/Mailadress finns redan ");
+            return "auth/register";
+        }
     }
 
     @GetMapping("/login")
@@ -37,12 +46,40 @@ public class AuthController {
         model.addAttribute("user", new User());
         return "auth/login";
     }
+
     @GetMapping("/logout")
-    public String logoutUser(HttpSession session) {
-        session.invalidate();
-        return "redirect:/";
+    public String logoutUser() {
+        return "redirect:/auth/logout";
     }
 
+    private boolean isCurrentUserAdmin() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+    }
 
+    @GetMapping("/register-admin")
+    public String showAdminRegistrationForm(Model model) {
+        if (!isCurrentUserAdmin()) {
+            return "redirect:/";
+        }
+        model.addAttribute("user", new User());
+        return "auth/register-admin";
+    }
 
+    @PostMapping("/register-admin")
+    public String registerAdmin(@ModelAttribute("user") User user, Model model) {
+        if (!isCurrentUserAdmin()) {
+            return "redirect:/";
+        }
+
+        try {
+            authService.registerAdmin(user);
+            return "redirect:/shifts/all";
+        } catch (Exception e) {
+            model.addAttribute("user", user);
+            model.addAttribute("error", "Registreringen av admin misslyckades: Konto med Användarnamn/Mailadress finns redan ");
+            return "auth/register-admin";
+        }
+    }
 }
+

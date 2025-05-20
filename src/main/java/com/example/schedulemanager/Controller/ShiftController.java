@@ -106,12 +106,20 @@ public class ShiftController {
     @GetMapping("/user/{userId}/date")
     public String viewShiftsByUserAndDate(
             @PathVariable Long userId,
-            @RequestParam("date") String date,
+            @RequestParam("date") String dateString,
             Model model
     ) {
-        LocalDate localDate = LocalDate.parse(date);
-        List<Shift> shifts = shiftService.getShiftsByUserIdAndDate(userId, localDate);
-        model.addAttribute("shifts", shifts);
+        LocalDate date = LocalDate.parse(dateString);
+
+        List<Shift> shifts = shiftService.getShiftsByUserId(userId);
+        List<Shift> filteredShifts = shifts.stream()
+                .filter(shift -> shift.getDate().equals(date))
+                .toList();
+
+        model.addAttribute("shifts", filteredShifts);
+        model.addAttribute("selectedDate", date);
+        model.addAttribute("selectedUserId", userId);
+
         return "shifts/list";
     }
 

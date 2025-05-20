@@ -25,12 +25,11 @@ public class AuthService {
     }
 
     public User registerUser(User user) {
-        Role role = roleRepository.findByName(user.getRole().getName())
+        Role defaultRole = roleRepository.findByName("employee")
                 .orElseThrow(() -> new RuntimeException("Role not found"));
 
-        user.setRole(role);
+        user.setRole(defaultRole);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-
         return userRepository.save(user);
     }
 
@@ -44,5 +43,13 @@ public class AuthService {
         }
 
         return user;
+    }
+    public User registerAdmin(User user) {
+        Role adminRole = roleRepository.findByName("admin")
+                .orElseThrow(() -> new RuntimeException("Role not found"));
+
+        user.setRole(adminRole);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        return userRepository.save(user);
     }
 }

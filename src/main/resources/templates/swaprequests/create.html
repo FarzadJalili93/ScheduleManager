@@ -6,9 +6,12 @@
     <link rel="stylesheet" th:href="@{/styles.css}" />
 </head>
 <body>
-<!-- Inkludera header-fragmentet -->
+
 <div th:replace="~{fragments/header :: header}"></div>
 
+<div th:if="${errorMessage}" class="alert alert-danger" style="color: red; margin-bottom: 1em;">
+    <p th:text="${errorMessage}"></p>
+</div>
 <div class="container">
     <div class="card">
         <h1>Ny Bytesförfrågan</h1>

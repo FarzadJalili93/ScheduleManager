@@ -54,10 +54,10 @@ public class ShiftSwapRequestController {
             throw new RuntimeException("Den inloggade användaren har inga skift tillgängliga.");
         }
 
-        model.addAttribute("swapRequest", new ShiftSwapRequest());
-        model.addAttribute("users", users);
-        model.addAttribute("availableShifts", userShifts);
-        model.addAttribute("otherShifts", otherShifts);
+            model.addAttribute("swapRequest", new ShiftSwapRequest());
+            model.addAttribute("users", users);
+            model.addAttribute("availableShifts", userShifts);
+            model.addAttribute("otherShifts", otherShifts);
 
         return "swaprequests/create";
     }
@@ -73,12 +73,17 @@ public class ShiftSwapRequestController {
             throw new RuntimeException("Välj både ett skift att byta bort och ett skift att få.");
         }
 
-        request.setRequester(loggedInUser);
-        request.setRequestDate(LocalDateTime.now());
-        request.setStatus("PENDING");
+            request.setRequester(loggedInUser);
+            request.setRequestDate(LocalDateTime.now());
+            request.setStatus("PENDING");
 
-        shiftSwapRequestService.createSwapRequest(request);
-        return "redirect:/swap-requests";
+            shiftSwapRequestService.createSwapRequest(request);
+            return "redirect:/swap-requests";
+
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Ett fel inträffade: " + e.getMessage());
+            return "swaprequests/create";
+        }
     }
 
     @GetMapping("/approve/{id}")

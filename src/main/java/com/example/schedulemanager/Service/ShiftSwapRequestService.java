@@ -23,7 +23,7 @@ public class ShiftSwapRequestService {
 
     public ShiftSwapRequest createSwapRequest(ShiftSwapRequest request) {
         if (request.getTargetUser() == null) {
-            throw new IllegalArgumentException("Target user cannot be null");
+            throw new IllegalArgumentException("Mottagaren av bytet får inte vara tom.");
         }
         return shiftSwapRequestRepository.save(request);
     }
@@ -37,9 +37,12 @@ public class ShiftSwapRequestService {
     }
 
     public ShiftSwapRequest approveRequest(Long requestId) {
-        ShiftSwapRequest request = shiftSwapRequestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("Förfrågan hittades inte"));
+        Optional<ShiftSwapRequest> optional = shiftSwapRequestRepository.findById(requestId);
+        if (optional.isEmpty()) {
+            throw new IllegalArgumentException("Förfrågan kunde inte hittas.");
+        }
 
+        ShiftSwapRequest request = optional.get();
         Shift requestedShift = request.getRequestedShift();
         Shift desiredShift = request.getDesiredShift();
 
