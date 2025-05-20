@@ -9,7 +9,6 @@
 <div class="container">
     <h1>Alla Skift</h1>
 
-
     <div class="user-info" th:if="${currentUserName}">
         Välkommen, <span th:text="${currentUserName}">Användare</span>!
         <a th:href="@{/auth/logout}">Logga ut</a>
@@ -22,6 +21,20 @@
     </div>
 
     <a class="create-btn" th:href="@{/shifts/create}">Skapa nytt skift</a>
+
+
+    <form method="get" th:action="@{/shifts/all}">
+        <label for="userId">Filtrera efter användare:</label>
+        <select name="userId" id="userId">
+            <option value="">-- Alla användare --</option>
+            <option th:each="user : ${users}"
+                    th:value="${user.id}"
+                    th:text="${user.name}"
+                    th:selected="${user.id == selectedUserId}">
+            </option>
+        </select>
+        <button type="submit">Filtrera</button>
+    </form>
 
     <table>
         <thead>

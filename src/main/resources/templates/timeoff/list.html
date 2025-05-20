@@ -11,6 +11,22 @@
 <div class="container">
     <div class="card">
         <h1>Alla Ledighetsförfrågningar</h1>
+
+        <!-- Filtreringsformulär -->
+        <form method="get" th:action="@{/timeoff/list}" style="margin: 1rem 0;">
+            <label for="userId">Filtrera efter användare:</label>
+            <select name="userId" id="userId">
+                <option value="">-- Alla användare --</option>
+                <option th:each="user : ${users}"
+                        th:value="${user.id}"
+                        th:text="${user.name}"
+                        th:selected="${user.id == selectedUserId}">
+                </option>
+            </select>
+            <button type="submit">Filtrera</button>
+        </form>
+
+        <!-- Tabell med förfrågningar -->
         <table>
             <thead>
             <tr>
@@ -24,9 +40,9 @@
             <tbody>
             <tr th:each="request : ${requests}">
                 <td th:text="${request.user.name}">Användare</td>
-                <td th:text="${request.startDate}">2025-01-01</td>
-                <td th:text="${request.endDate}">2025-01-03</td>
-                <td th:text="${request.approvalStatus}">PENDING</td>
+                <td th:text="${#temporals.format(request.startDate, 'yyyy-MM-dd')}">Start</td>
+                <td th:text="${#temporals.format(request.endDate, 'yyyy-MM-dd')}">Slut</td>
+                <td th:text="${request.approvalStatus}">Status</td>
                 <td>
                     <a th:href="@{/timeoff/edit/{id}(id=${request.id})}" class="btn btn-primary">Redigera</a>
                 </td>

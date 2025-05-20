@@ -21,7 +21,6 @@ public class Role {
         this.description = description;
     }
 
-    // Getters and setters
 
     public Long getId() {
         return id;

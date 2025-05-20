@@ -65,13 +65,19 @@ public class ShiftService {
             throw new RuntimeException("Sluttiden kan inte vara före starttiden.");
         }
 
-        if (shift.getAssignedUser() != null && !shift.getAssignedUser().equals(existingShift.getAssignedUser())) {
-            List<Shift> existingShifts = shiftRepository.findByAssignedUserIdAndDate(shift.getAssignedUser().getId(), shift.getDate());
-            if (!existingShifts.isEmpty()) {
-                throw new RuntimeException("Den nya användaren har redan ett skift på det här datumet.");
+        if (shift.getAssignedUser() != null) {
+            List<Shift> existingShifts = shiftRepository.findByAssignedUserIdAndDate(
+                    shift.getAssignedUser().getId(), shift.getDate());
+
+            boolean conflictExists = existingShifts.stream()
+                    .anyMatch(s -> !s.getId().equals(id));
+
+            if (conflictExists) {
+                throw new RuntimeException("Användaren har redan ett annat skift på det här datumet.");
             }
         }
 
+        existingShift.setDate(shift.getDate());
         existingShift.setStartTime(shift.getStartTime());
         existingShift.setEndTime(shift.getEndTime());
         existingShift.setConfirmed(shift.isConfirmed());
@@ -79,6 +85,7 @@ public class ShiftService {
 
         return shiftRepository.save(existingShift);
     }
+
 
     public Shift confirmShift(Long id) {
         Optional<Shift> shift = shiftRepository.findById(id);
@@ -99,4 +106,17 @@ public class ShiftService {
             throw new RuntimeException("Skift med ID " + id + " finns inte.");
         }
     }
+
+    public void deleteShiftsForUserBetweenDates(Long userId, LocalDate startDate, LocalDate endDate) {
+        List<Shift> shiftsToDelete = shiftRepository.findByAssignedUserIdAndDateBetween(userId, startDate, endDate);
+
+        if (!shiftsToDelete.isEmpty()) {
+            for (Shift shift : shiftsToDelete) {
+                System.out.println("Tar bort pass: ID=" + shift.getId() + ", Datum=" + shift.getDate());
+            }
+
+            shiftRepository.deleteAll(shiftsToDelete);
+        }
+    }
+
 }

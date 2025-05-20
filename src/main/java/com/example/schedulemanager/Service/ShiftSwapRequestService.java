@@ -36,6 +36,13 @@ public class ShiftSwapRequestService {
         shiftSwapRequestRepository.deleteById(id);
     }
 
+    public List<ShiftSwapRequest> getRequestsByRequesterId(Long userId) {
+        User user = new User();
+        user.setId(userId);
+        return shiftSwapRequestRepository.findByRequester(user);
+    }
+
+
     public ShiftSwapRequest approveRequest(Long requestId) {
         Optional<ShiftSwapRequest> optional = shiftSwapRequestRepository.findById(requestId);
         if (optional.isEmpty()) {

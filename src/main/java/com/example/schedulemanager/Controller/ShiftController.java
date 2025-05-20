@@ -26,9 +26,20 @@ public class ShiftController {
     private UserService userService;
 
     @GetMapping("/all")
-    public String viewAllShifts(Model model) {
-        List<Shift> shifts = shiftService.getAllShifts();
+    public String viewAllShifts(@RequestParam(required = false) Long userId, Model model) {
+        List<Shift> shifts;
+
+        if (userId != null) {
+            shifts = shiftService.getShiftsByUserId(userId);
+            model.addAttribute("selectedUserId", userId);
+        } else {
+            shifts = shiftService.getAllShifts();
+        }
+
+        List<User> users = userService.getAllUsers();
         model.addAttribute("shifts", shifts);
+        model.addAttribute("users", users);
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated() &&
                 !authentication.getPrincipal().equals("anonymousUser")) {
@@ -42,6 +53,7 @@ public class ShiftController {
         return "shifts/list";
     }
 
+
     @GetMapping("/create")
     public String showCreateForm(Model model) {
         model.addAttribute("shift", new Shift());
@@ -52,14 +64,24 @@ public class ShiftController {
     @PostMapping("/create")
     public String createShift(
             @ModelAttribute("shift") Shift shift,
-            @RequestParam("userId") Long userId
+            @RequestParam("userId") Long userId,
+            Model model
     ) {
         User user = userService.getUserById(userId)
                 .orElseThrow(() -> new RuntimeException("Användare med ID " + userId + " hittades inte"));
         shift.setAssignedUser(user);
-        shiftService.createShift(shift);
-        return "redirect:/shifts/all";
+
+        try {
+            shiftService.createShift(shift);
+            return "redirect:/shifts/all";
+        } catch (RuntimeException e) {
+            model.addAttribute("shift", shift);
+            model.addAttribute("users", userService.getAllUsers());
+            model.addAttribute("errorMessage", e.getMessage());
+            return "shifts/create";
+        }
     }
+
 
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
@@ -74,15 +96,26 @@ public class ShiftController {
     public String updateShift(
             @PathVariable Long id,
             @ModelAttribute("shift") Shift updatedShift,
-            @RequestParam("userId") Long userId
+            @RequestParam("userId") Long userId,
+            Model model
     ) {
-        User user = userService.getUserById(userId)
-                .orElseThrow(() -> new RuntimeException("Användare med ID " + userId + " hittades inte"));
-        updatedShift.setId(id);
-        updatedShift.setAssignedUser(user);
-        shiftService.updateShift(id, updatedShift);
-        return "redirect:/shifts/all";
+        try {
+            User user = userService.getUserById(userId)
+                    .orElseThrow(() -> new RuntimeException("Användare med ID " + userId + " hittades inte"));
+
+            updatedShift.setId(id);
+            updatedShift.setAssignedUser(user);
+
+            shiftService.updateShift(id, updatedShift);
+            return "redirect:/shifts/all";
+        } catch (RuntimeException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("shift", updatedShift);
+            model.addAttribute("users", userService.getAllUsers());
+            return "shifts/edit";
+        }
     }
+
 
     @GetMapping("/confirm/{id}")
     public String confirmShift(@PathVariable Long id) {

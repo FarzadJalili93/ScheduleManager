@@ -11,6 +11,12 @@
 <div class="container">
     <div class="card">
         <h1>Ny Ledighetsförfrågan</h1>
+
+        <!-- Lägg till detta för att visa felmeddelande -->
+        <div th:if="${errorMessage}" style="color: red; margin-bottom: 1em;">
+            <p th:text="${errorMessage}"></p>
+        </div>
+
         <form th:action="@{/timeoff/create}" method="post" th:object="${timeOffRequest}">
 
             <label for="startDate">Startdatum:</label>

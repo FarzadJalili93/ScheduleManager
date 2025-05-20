@@ -11,6 +11,12 @@
 
 <div class="container">
     <h2>Redigera skift</h2>
+
+
+    <div th:if="${errorMessage}" class="error" style="color: red; margin-bottom: 1em;">
+        <p th:text="${errorMessage}"></p>
+    </div>
+
     <form th:action="@{/shifts/edit/{id}(id=${shift.id})}" th:object="${shift}" method="post">
         <label for="date">Datum:</label>
         <input type="date" id="date" th:field="*{date}" required/>
@@ -20,7 +26,6 @@
 
         <label for="endTime">Sluttid:</label>
         <input type="time" id="endTime" th:field="*{endTime}" required/>
-
 
         <label for="userId">Tilldela till användare:</label>
         <select id="userId" name="userId" required>
@@ -32,6 +37,7 @@
         <button type="submit">Uppdatera</button>
     </form>
 </div>
+
 </body>
 </html>
 

@@ -41,15 +41,27 @@ public class TimeOffRequestController {
     }
 
     @GetMapping("/list")
-    public String listRequests(Model model) {
+    public String listRequests(@RequestParam(name = "userId", required = false) Long userId, Model model) {
         User currentUser = getCurrentUser();
         if (currentUser != null && "ADMIN".equals(currentUser.getRole().getName())) {
-            List<TimeOffRequest> requests = timeOffRequestService.getAllRequests();
+            List<TimeOffRequest> requests;
+            if (userId != null) {
+                requests = timeOffRequestService.getRequestsByUserId(userId);
+            } else {
+                requests = timeOffRequestService.getAllRequests();
+            }
+
+            List<User> users = userService.getAllUsers();
+
             model.addAttribute("requests", requests);
+            model.addAttribute("users", users);
+            model.addAttribute("selectedUserId", userId);
+
             return "timeoff/list";
         }
         return "redirect:/timeoff/my";
     }
+
 
     @GetMapping("/create")
     public String showCreateForm(Model model) {
@@ -58,14 +70,21 @@ public class TimeOffRequestController {
     }
 
     @PostMapping("/create")
-    public String createRequest(@ModelAttribute("timeOffRequest") TimeOffRequest request) {
+    public String createRequest(@ModelAttribute("timeOffRequest") TimeOffRequest request, Model model) {
         User currentUser = getCurrentUser();
         if (currentUser != null) {
             request.setUser(currentUser);
             request.setApprovalStatus(ApprovalStatus.PENDING);
-            timeOffRequestService.createRequest(request);
+            try {
+                timeOffRequestService.createRequest(request);
+                return "redirect:/timeoff/my";
+            } catch (RuntimeException e) {
+                model.addAttribute("errorMessage", e.getMessage());
+                model.addAttribute("timeOffRequest", request);
+                return "timeoff/create";
+            }
         }
-        return "redirect:/timeoff/my";
+        return "redirect:/login";  
     }
 
     @GetMapping("/my")
@@ -93,16 +112,22 @@ public class TimeOffRequestController {
     }
 
     @PostMapping("/edit/{id}")
-    public String updateRequest(@PathVariable Long id, @ModelAttribute("timeOffRequest") TimeOffRequest updatedRequest) {
+    public String updateRequest(@PathVariable Long id, @ModelAttribute("timeOffRequest") TimeOffRequest updatedRequest, Model model) {
         User currentUser = getCurrentUser();
         if (currentUser != null && "ADMIN".equalsIgnoreCase(currentUser.getRole().getName())) {
             TimeOffRequest existingRequest = timeOffRequestService.getRequestById(id).orElse(null);
             if (existingRequest != null) {
                 updatedRequest.setId(id);
                 updatedRequest.setUser(existingRequest.getUser());
-                timeOffRequestService.updateRequest(id, updatedRequest);
+                try {
+                    timeOffRequestService.updateRequest(id, updatedRequest);
+                    return "redirect:/timeoff/list";
+                } catch (RuntimeException e) {
+                    model.addAttribute("errorMessage", e.getMessage());
+                    model.addAttribute("timeOffRequest", updatedRequest);
+                    return "timeoff/edit";
+                }
             }
-            return "redirect:/timeoff/list";
         }
         return "redirect:/timeoff/my";
     }

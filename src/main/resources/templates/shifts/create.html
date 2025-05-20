@@ -10,6 +10,12 @@
 
 <div class="container">
     <h2>Skapa nytt skift</h2>
+
+    <!-- Felmeddelande -->
+    <div th:if="${errorMessage}" class="error" style="color: red; margin-bottom: 1em;">
+        <p th:text="${errorMessage}"></p>
+    </div>
+
     <form th:action="@{/shifts/create}" th:object="${shift}" method="post">
         <label for="date">Datum:</label>
         <input type="date" id="date" th:field="*{date}" required/>
@@ -29,5 +35,6 @@
         <button type="submit">Skapa</button>
     </form>
 </div>
+
 </body>
 </html>

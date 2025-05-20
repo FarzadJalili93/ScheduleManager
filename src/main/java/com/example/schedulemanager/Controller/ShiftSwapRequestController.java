@@ -6,6 +6,7 @@ import com.example.schedulemanager.Entities.User;
 import com.example.schedulemanager.Service.ShiftService;
 import com.example.schedulemanager.Service.ShiftSwapRequestService;
 import com.example.schedulemanager.Service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,6 +25,7 @@ public class ShiftSwapRequestController {
     private final UserService userService;
     private final ShiftService shiftService;
 
+    @Autowired
     public ShiftSwapRequestController(ShiftSwapRequestService shiftSwapRequestService,
                                       UserService userService,
                                       ShiftService shiftService) {
@@ -33,11 +35,34 @@ public class ShiftSwapRequestController {
     }
 
     @GetMapping
-    public String listRequests(Model model) {
-        List<ShiftSwapRequest> requests = shiftSwapRequestService.getAllRequests();
+    public String listRequests(@RequestParam(required = false) Long userId, Model model) {
+        User loggedInUser = getLoggedInUser();
+
+        if (loggedInUser == null) {
+            return "redirect:/auth/login";
+        }
+
+        List<ShiftSwapRequest> requests;
+
+        if ("ADMIN".equalsIgnoreCase(loggedInUser.getRole().getName())) {
+            if (userId != null) {
+                requests = shiftSwapRequestService.getRequestsByRequesterId(userId);
+                model.addAttribute("selectedUserId", userId);
+            } else {
+                requests = shiftSwapRequestService.getAllRequests();
+            }
+        } else {
+            requests = shiftSwapRequestService.getRequestsByRequesterId(loggedInUser.getId());
+        }
+
+        List<User> users = userService.getAllUsers();
+        model.addAttribute("users", users);
         model.addAttribute("requests", requests);
+
         return "swaprequests/list";
     }
+
+
 
     @GetMapping("/create")
     public String showCreateForm(Model model) {
@@ -46,32 +71,39 @@ public class ShiftSwapRequestController {
             return "redirect:/auth/login";
         }
 
-        List<User> users = userService.getAllUsersExcept(loggedInUser.getId());
-        List<Shift> userShifts = shiftService.getShiftsByUserId(loggedInUser.getId());
-        List<Shift> otherShifts = shiftService.getShiftsByOtherUsers(loggedInUser.getId());
+        try {
+            List<User> users = userService.getAllUsersExcept(loggedInUser.getId());
+            List<Shift> userShifts = shiftService.getShiftsByUserId(loggedInUser.getId());
+            List<Shift> otherShifts = shiftService.getShiftsByOtherUsers(loggedInUser.getId());
 
-        if (userShifts.isEmpty()) {
-            throw new RuntimeException("Den inloggade användaren har inga skift tillgängliga.");
-        }
+            if (userShifts.isEmpty()) {
+                model.addAttribute("errorMessage", "Du har inga skift att byta bort.");
+            }
 
             model.addAttribute("swapRequest", new ShiftSwapRequest());
             model.addAttribute("users", users);
             model.addAttribute("availableShifts", userShifts);
             model.addAttribute("otherShifts", otherShifts);
 
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Ett fel inträffade: " + e.getMessage());
+        }
+
         return "swaprequests/create";
     }
 
     @PostMapping("/create")
-    public String createRequest(@ModelAttribute("swapRequest") ShiftSwapRequest request) {
+    public String createRequest(@ModelAttribute("swapRequest") ShiftSwapRequest request, Model model) {
         User loggedInUser = getLoggedInUser();
         if (loggedInUser == null) {
             return "redirect:/auth/login";
         }
 
-        if (request.getRequestedShift() == null || request.getDesiredShift() == null) {
-            throw new RuntimeException("Välj både ett skift att byta bort och ett skift att få.");
-        }
+        try {
+            if (request.getRequestedShift() == null || request.getDesiredShift() == null) {
+                model.addAttribute("errorMessage", "Välj både ett skift att byta bort och ett skift att få.");
+                return "swaprequests/create";
+            }
 
             request.setRequester(loggedInUser);
             request.setRequestDate(LocalDateTime.now());

@@ -5,7 +5,9 @@ import com.example.schedulemanager.Entities.TimeOffRequest;
 import com.example.schedulemanager.Entities.User;
 import com.example.schedulemanager.Enum.ApprovalStatus;
 import com.example.schedulemanager.Repositories.ShiftRepository;
+import com.example.schedulemanager.Repositories.ShiftSwapRequestRepository;
 import com.example.schedulemanager.Repositories.TimeOffRequestRepository;
+import com.example.schedulemanager.Service.ShiftService;
 import com.example.schedulemanager.Service.TimeOffRequestService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,12 +24,17 @@ class TimeOffRequestServiceTest {
     private TimeOffRequestRepository timeOffRequestRepository;
     private ShiftRepository shiftRepository;
     private TimeOffRequestService service;
+    private ShiftService shiftService;
+    private ShiftSwapRequestRepository shiftSwapRequestRepository;
 
     @BeforeEach
     void setup() {
         timeOffRequestRepository = mock(TimeOffRequestRepository.class);
         shiftRepository = mock(ShiftRepository.class);
-        service = new TimeOffRequestService(timeOffRequestRepository, shiftRepository);
+        shiftService = mock(ShiftService.class);
+        shiftSwapRequestRepository = mock(ShiftSwapRequestRepository.class);
+
+        service = new TimeOffRequestService(timeOffRequestRepository, shiftRepository, shiftService, shiftSwapRequestRepository);
     }
 
     @Test

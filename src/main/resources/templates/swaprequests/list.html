@@ -8,14 +8,28 @@
     <link rel="stylesheet" th:href="@{/styles.css}" />
 </head>
 <body>
-<!-- Inkludera header-fragmentet -->
+
 <div th:replace="~{fragments/header :: header}"></div>
 
 <div class="container">
     <div class="card">
-        <h1>Bytesförfråningar</h1>
+        <h1>Bytesförfrågningar</h1>
 
         <a class="btn" th:href="@{/swap-requests/create}">Ny bytesförfrågan</a>
+
+        <form method="get" th:action="@{/swap-requests}" style="margin: 1rem 0;" sec:authorize="hasRole('ADMIN')">
+            <label for="userId">Filtrera efter användare:</label>
+            <select name="userId" id="userId">
+                <option value="">-- Alla användare --</option>
+                <option th:each="user : ${users}"
+                        th:value="${user.id}"
+                        th:text="${user.name}"
+                        th:selected="${user.id == selectedUserId}">
+                </option>
+            </select>
+            <button type="submit">Filtrera</button>
+        </form>
+
 
         <table>
             <thead>
