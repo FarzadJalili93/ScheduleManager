@@ -52,8 +52,16 @@ public class TimeOffRequestService {
             throw new RuntimeException("Användaren har redan en ledighetsförfrågan under denna period.");
         }
 
+        List<Shift> overlappingShifts = shiftRepository.findByAssignedUserIdAndDateBetween(
+                request.getUser().getId(), request.getStartDate(), request.getEndDate());
+
+        if (!overlappingShifts.isEmpty()) {
+            throw new RuntimeException("Användaren har redan ett skift under denna period.");
+        }
+
         return timeOffRequestRepository.save(request);
     }
+
 
     public List<TimeOffRequest> getAllRequests() {
         return timeOffRequestRepository.findAll();

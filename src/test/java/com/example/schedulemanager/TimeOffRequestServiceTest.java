@@ -65,7 +65,8 @@ class TimeOffRequestServiceTest {
         RuntimeException ex = assertThrows(RuntimeException.class,
                 () -> service.createRequest(request));
 
-        assertEquals("Användaren har redan skift inplanerade under begärd ledighet.", ex.getMessage());
+        assertEquals("Användaren har redan ett skift under denna period.", ex.getMessage());
+
     }
 
     @Test
@@ -95,6 +96,10 @@ class TimeOffRequestServiceTest {
         request.setId(id);
         request.setApprovalStatus(ApprovalStatus.PENDING);
 
+        User user = new User();
+        user.setId(1L);
+        request.setUser(user);
+
         when(timeOffRequestRepository.findById(id)).thenReturn(Optional.of(request));
         when(timeOffRequestRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
@@ -104,6 +109,8 @@ class TimeOffRequestServiceTest {
         verify(timeOffRequestRepository).save(request);
     }
 
+
+
     @Test
     void approveRequestWhenNotPendingShouldThrow() {
         Long id = 1L;
@@ -111,13 +118,18 @@ class TimeOffRequestServiceTest {
         request.setId(id);
         request.setApprovalStatus(ApprovalStatus.APPROVED);
 
+        User user = new User();
+        user.setId(1L);
+        request.setUser(user);
+
         when(timeOffRequestRepository.findById(id)).thenReturn(Optional.of(request));
 
         RuntimeException ex = assertThrows(RuntimeException.class,
                 () -> service.approveRequest(id));
 
-        assertEquals("Begäran är redan behandlad (antingen godkänd eller avslagen).", ex.getMessage());
+        assertEquals("Begäran är redan behandlad.", ex.getMessage());
     }
+
 
     @Test
     void deleteRequestWhenExistsShouldReturnTrue() {

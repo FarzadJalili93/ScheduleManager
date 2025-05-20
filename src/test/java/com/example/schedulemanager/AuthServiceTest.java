@@ -51,14 +51,14 @@ class AuthServiceTest {
 
     @Test
     void registerUserShouldEncodePasswordAndSaveUser() {
-        when(roleRepository.findByName("USER")).thenReturn(Optional.of(role));
+        when(roleRepository.findByName("employee")).thenReturn(Optional.of(role));
         when(passwordEncoder.encode("plaintextpassword")).thenReturn("encodedpassword");
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
         User registeredUser = authService.registerUser(user);
 
         verify(passwordEncoder).encode("plaintextpassword");
-        verify(roleRepository).findByName("USER");
+        verify(roleRepository).findByName("employee");
         verify(userRepository).save(any(User.class));
 
         assertEquals("encodedpassword", registeredUser.getPassword());
@@ -67,14 +67,14 @@ class AuthServiceTest {
 
     @Test
     void registerUserShouldThrowExceptionWhenRoleNotFound() {
-        when(roleRepository.findByName("USER")).thenReturn(Optional.empty());
+        when(roleRepository.findByName("employee")).thenReturn(Optional.empty());
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             authService.registerUser(user);
         });
 
         assertEquals("Role not found", exception.getMessage());
-        verify(roleRepository).findByName("USER");
+        verify(roleRepository).findByName("employee");
         verifyNoMoreInteractions(userRepository);
         verifyNoInteractions(passwordEncoder);
     }

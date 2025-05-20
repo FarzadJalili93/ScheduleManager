@@ -123,6 +123,7 @@ class ShiftServiceTest {
 
     @Test
     void updateShiftThrowsWhenNewUserAlreadyHasShift() {
+        // Arrange
         User newUser = new User();
         newUser.setId(2L);
 
@@ -132,12 +133,23 @@ class ShiftServiceTest {
         updatedShift.setAssignedUser(newUser);
         updatedShift.setDate(date);
 
-        when(shiftRepository.findById(1L)).thenReturn(Optional.of(shift));
-        when(shiftRepository.findByAssignedUserIdAndDate(2L, date)).thenReturn(List.of(new Shift()));
+        // Det skift som redan ligger i systemet (ska kastas fel för att användaren redan har ett skift)
+        Shift existingShift = new Shift();
+        existingShift.setId(99L);  // Viktigt! Annars kraschar equals() när id är null
 
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> shiftService.updateShift(1L, updatedShift));
-        assertEquals("Den nya användaren har redan ett skift på det här datumet.", ex.getMessage());
+        // Mocka vad shiftRepository ska returnera
+        when(shiftRepository.findById(1L)).thenReturn(Optional.of(shift));
+        when(shiftRepository.findByAssignedUserIdAndDate(2L, date)).thenReturn(List.of(existingShift));
+
+        // Act + Assert
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> {
+            shiftService.updateShift(1L, updatedShift);
+        });
+
+        // Kontrollera felmeddelande
+        assertEquals("Användaren har redan ett annat skift på det här datumet.", ex.getMessage());
     }
+
 
     @Test
     void confirmShiftSuccess() {

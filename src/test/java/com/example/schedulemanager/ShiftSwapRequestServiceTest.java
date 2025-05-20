@@ -36,7 +36,7 @@ class ShiftSwapRequestServiceTest {
         Exception ex = assertThrows(IllegalArgumentException.class,
                 () -> service.createSwapRequest(request));
 
-        assertEquals("Target user cannot be null", ex.getMessage());
+        assertEquals("Mottagaren av bytet får inte vara tom.", ex.getMessage());
         verifyNoInteractions(shiftSwapRequestRepository);
     }
 
